@@ -1,0 +1,23 @@
+#!/bin/bash
+
+d=`mktemp -d`
+echo "Create temp dir '$d'"
+cd $d
+mkdir -p a{1,2}/b{1,2}
+find
+
+echo "Download latest configure version"
+wget -q https://fborg.svn.sourceforge.net/svnroot/fborg/miniconf/configure
+chmod 755 ./configure
+echo "Download latest config files"
+
+function run()
+{
+    echo
+    echo -e "\e[1m$*\e[0m"
+    $@
+}
+
+run ./configure --sysinstall
+run ./configure
+run make V=1
