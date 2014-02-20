@@ -1,23 +1,82 @@
 #!/bin/bash
 
-d=`mktemp -d`
-echo "Create temp dir '$d'"
-cd $d
-mkdir -p a{1,2}/b{1,2}
-find
+set -e
+set -u
 
-echo "Download latest configure version"
-wget -q https://fborg.svn.sourceforge.net/svnroot/fborg/miniconf/configure
-chmod 755 ./configure
-echo "Download latest config files"
+function do_test()
+{ 
+    msg=$1
+    shift
+    log=/tmp/log.$1
+    echo -ne "\e[01;32m*\033[00m $msg\e[60G\e[01;32m"
+    if $* 1>$log 2>&1; then
+        echo -e "ok\033[00m"
+        rm $log
+    else
+        echo -e "fail\033[00m"
+        echo "See $log for details"
+    fi
+}
+        
 
-function run()
+function mk_temp_proj()
 {
-    echo
-    echo -e "\e[1m$*\e[0m"
-    $@
+    mkdir -p a{1,2}/b{1,2}
 }
 
-run ./configure --sysinstall
-run ./configure
-run make V=1
+
+function do_test_install_from_archive()
+{
+    _dir=${FUNCNAME[0]}
+    mkdir $_dir
+    cd $_dir
+    
+    mk_temp_proj \
+        || return 1
+    wget -q -O /tmp/miniconf.tar.gz \
+        https://github.com/aanatoly/miniconf/archive/master.tar.gz \
+        || return 1
+    tar xf /tmp/miniconf.tar.gz --strip 1 \
+        || return 1
+    rm /tmp/miniconf.tar.gz
+    ./configure -h \
+        || return 1
+    cd -
+}
+
+function do_test_install_from_configure()
+{
+    _dir=${FUNCNAME[0]}
+    mkdir $_dir
+    cd $_dir
+
+    mk_temp_proj \
+        || return 1
+    wget https://raw2.github.com/aanatoly/miniconf/master/configure \
+        || return 1
+    chmod 755 ./configure
+    ./configure --mc-update \
+        || return 1
+    find
+    cd -
+
+}
+
+function do_test_create_makefils()
+{
+    cd do_test_install_from_archive
+    ./configure --mc-makefiles \
+        || return 1
+}
+
+
+pdir=/tmp/xxx
+pdir=`mktemp -d`
+cd $pdir
+
+do_test "Install from archive" do_test_install_from_archive
+do_test "Install from configure" do_test_install_from_configure
+do_test "Create makefiles" do_test_create_makefils
+
+find $pdir
+rm -rf $pdir

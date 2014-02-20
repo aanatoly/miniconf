@@ -347,29 +347,28 @@ def resolve():
 ###   Self Install                                     ###
 ##########################################################
 
-def sysinstall():
+def mc_update():
     x.info("Downloading latest code")
 
     dtmp = tempfile.mkdtemp()
-    x.debug("sysuri '%s'", args.sysuri)
-    if args.sysuri.startswith('https://'):
-        cmd = 'svn co %s %s' % (args.sysuri, dtmp)
-    elif args.sysuri.startswith('file://'):
-        cmd = 'tar cf - -C %s . | tar xvf - -C %s' % (args.sysuri[7:], dtmp)
-    else:
-        raise BaseException("unknwon proto in uri " + args.sysuri)
-    x.debug('%s', cmd)
-    sp.check_output(cmd, shell = True)
-    shutil.rmtree(os.path.join(dtmp, 'tests'))
+    repo = 'https://github.com/aanatoly/miniconf.git'
 
-    x.info("Copy to current directory")
-    cmd = 'rsync -vCa %s/ .' % dtmp
-    x.debug('%s', cmd)
-    t = sp.check_output(cmd, shell = True)
-    t = t.split('\n\n')
-    x.debug('%s', '\n  '.join(t[0].split('\n')[1:]))
+    cmd = 'git clone -q %s %s' % (repo, dtmp)
+    sp.check_output(cmd, shell = True)
+
+    for d in ['tests', 'example', '.git']:
+        cmd = 'rm -rf %s/%s' % (dtmp, d)
+        sp.check_output(cmd, shell = True)
+
+    cmd = 'rsync -a %s/ .' % dtmp
+    sp.check_output(cmd, shell = True)
+
     shutil.rmtree(dtmp)
 
+def mc_makefiles():
+    return
+
+    
     header_text = '## miniconf makefiles ## %d.%d ##\n'
     header_re = '(?m)^## miniconf makefiles ## (\d+)\.(\d+) ##\n'
     def makefile_needed(dirname):
@@ -431,16 +430,12 @@ include $(TOPDIR)/.config/rules.mk
 def main():
     global p, x, args
 
-    opt_group_new('self', 'Configure install options')
-    p.add_argument("--sysinstall", group = 'self',
-        help = "(re)install configure scripts",
+    opt_group_new('miniconf', 'miniconf installation options')
+    p.add_argument("--mc-update", group = 'miniconf',
+        help = "update or install configure scripts",
         action = 'store_true')
-    p.add_argument("--sysuri", group = 'self',
-        help = "alternative source code URI",
-        metavar = 'URI',
-        default = 'https://fborg.svn.sourceforge.net/svnroot/fborg/miniconf')
-    p.add_argument("--sysdebug", group = 'self',
-        help = "enable debug output in configure script",
+    p.add_argument("--mc-makefiles", group = 'miniconf',
+        help = "create Makefiles for a project",
         action = 'store_true', default = False)
 
     opt_group_new('make', 'Makefile vars')
@@ -449,16 +444,24 @@ def main():
 
     init()
     args = p.parse_args()
-    init_log(args.sysdebug, 0, 'app')
-    if args.sysinstall:
-        sysinstall()
-    else:
-        assign_cmd_vars()
-        assign_cmd_opts()
-        resolve()
-        write_config()
-        write_repl()
-        report()
+    init_log(True, 0, 'app')
+    mc = 0
+    if args.mc_update:
+        mc_update()
+        mc = 1
+    if args.mc_makefiles:
+        mc_makefiles()
+        mc = 1
+
+    if mc:
+        exit(0)
+        
+    assign_cmd_vars()
+    assign_cmd_opts()
+    resolve()
+    write_config()
+    write_repl()
+    report()
 
 if __name__ == "__main__":
     try:
