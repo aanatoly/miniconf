@@ -3,7 +3,7 @@ miniconf
 
 Simple project configuration system, aimed as autoconf tools replacement. 
 
-It provides `configure` script with all standart options (eg `--prefix`, `--libdir`) and makefile rules, so usual
+It provides `configure` script with all standart options (eg `--prefix`, `--libdir`) and makefile rules. The deployment is easy, so achieving usual
 ```bash
 ./configure
 make
@@ -14,16 +14,7 @@ could be done in a minutes
 ## Installation
 
 ``miniconf`` is written in python and work with almost all versions from 2.4 to 3.3
-To install it, download [miniconf archive](https://github.com/aanatoly/miniconf/archive/master.zip) and unpack it in a project directory.
-```bash
-cd ~/myproj
-wget -O /tmp/miniconf.zip https://github.com/aanatoly/miniconf/archive/master.zip
-unzip /tmp/miniconf.zip 
-rm /tmp/miniconf.zip 
-```
-
-On systems with new python (2.7, 3.1 and up) you have another way.
-Download [configure](https://raw2.github.com/aanatoly/miniconf/master/configure) script, and use it to update or install
+To install it, download [configure](https://raw2.github.com/aanatoly/miniconf/master/configure) script, and use it to update or install
 ```bash
 cd ~/myproj
 wget https://raw2.github.com/aanatoly/miniconf/master/configure
