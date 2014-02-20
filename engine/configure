@@ -190,7 +190,21 @@ def assign_cmd_vars():
 ##########################################################
 ###   Options                                          ###
 ##########################################################
+def my_check_output(*popenargs, **kwargs):  
+    if 'stdout' in kwargs:
+        raise ValueError('stdout argument not allowed, it will be overridden.')
+    cmd = kwargs.get("args")
+    if cmd is None:
+        cmd = popenargs[0]
+    x.debug("exec: %s", cmd)
+    process = sp.Popen(stdout=sp.PIPE, *popenargs, **kwargs)
+    output, unused_err = process.communicate()
+    retcode = process.poll()
+    if retcode:
+        raise CalledProcessError(retcode, cmd, output=output)
+    return output
 
+    
 opts = {}
 opt_order = []
 args = None
@@ -257,7 +271,7 @@ def opt_new(name, **kw):
 def opt_new_from_pkg(vname, pname, pvars = [], pversion = "", required = True):
     cmd = ['pkg-config', '--print-errors', pname]
     try:
-        t = sp.check_output(cmd + pversion.split(), stderr=sp.STDOUT)
+        my_check_output(cmd + pversion.split(), stderr=sp.STDOUT)
     except sp.CalledProcessError, e:
         if required:
             print e.output
@@ -266,22 +280,19 @@ def opt_new_from_pkg(vname, pname, pvars = [], pversion = "", required = True):
             return
 
     opt_new(vname + '_libs',
-        default = sp.check_output(cmd + ['--libs']))
+        default = my_check_output(cmd + ['--libs']))
     opt_new(vname + '_cflags',
-        default = sp.check_output(cmd + ['--cflags']))
+        default = my_check_output(cmd + ['--cflags']))
     opt_new(vname + '_version',
-        default = sp.check_output(cmd + ['--modversion']))
+        default = my_check_output(cmd + ['--modversion']))
     for v in pvars:
         opt_new(vname + '_' + v,
-                default = sp.check_output(cmd + ['--variable=' + v]))
+                default = my_check_output(cmd + ['--variable=' + v]))
 
 def pkg_exists(pname, extra = ""):
-    cmd = ['pkg-config',  pname] + extra.split()
-    try:
-        t = sp.check_output(cmd)
-        return True
-    except sp.CalledProcessError, e:
-        return False
+    cmd = ['pkg-config', pname] + extra.split()
+    return sp.call(cmd) == 0
+
 
 def opt_set(name, value):
     global opts
@@ -354,14 +365,10 @@ def mc_update():
     repo = 'https://github.com/aanatoly/miniconf.git'
 
     cmd = 'git clone -q %s %s' % (repo, dtmp)
-    sp.check_output(cmd, shell = True)
+    my_check_output(cmd, shell = True)
 
-    for d in ['tests', 'example', '.git']:
-        cmd = 'rm -rf %s/%s' % (dtmp, d)
-        sp.check_output(cmd, shell = True)
-
-    cmd = 'rsync -a %s/ .' % dtmp
-    sp.check_output(cmd, shell = True)
+    cmd = 'rsync -a %s/engine/ .' % dtmp
+    my_check_output(cmd, shell = True)
 
     shutil.rmtree(dtmp)
 
