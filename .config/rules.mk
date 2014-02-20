@@ -243,7 +243,6 @@ endef
 
 ifeq ($(KVERSION),)
 KVERSION := $(shell uname -r)
-$(warning Auto-detect kernel version - $(shell uname -r))
 #export KVERSION
 endif
 

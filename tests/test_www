@@ -67,6 +67,10 @@ function do_test_create_makefils()
     cd do_test_install_from_archive
     ./configure --mc-makefiles \
         || return 1
+    ./configure \
+        || return 1
+    make V=1 \
+        || return 1
 }
 
 

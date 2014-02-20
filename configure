@@ -366,9 +366,6 @@ def mc_update():
     shutil.rmtree(dtmp)
 
 def mc_makefiles():
-    return
-
-    
     header_text = '## miniconf makefiles ## %d.%d ##\n'
     header_re = '(?m)^## miniconf makefiles ## (\d+)\.(\d+) ##\n'
     def makefile_needed(dirname):
@@ -390,9 +387,21 @@ def mc_makefiles():
 
     x.info("Creating makefiles")
     for dirname, dirs, filenames in os.walk('./'):
-        dirs[:] = [ d for d in dirs if not re.match('(CVS)|(\..+)', d)]
-        if dirname[:2] == './':
-            dirname = dirname[2:]
+        # remove starting './'
+        dirname = dirname[2:]
+        x.debug("dirname %s", dirname)
+        if dirname == '':
+            try:
+                dirs.remove('.config')
+            except:
+                pass
+
+        for d in ['.git', '.svn', 'CVS']:
+            try:
+                dirs.remove(d)
+            except:
+                pass   
+        x.debug("dirs: %s", dirs)
         if not makefile_needed(dirname):
             continue
         level = len([ v for v in dirname.split('/') if v ])
@@ -411,10 +420,8 @@ include $(TOPDIR)/.config/rules.mk
         text = text % (topdir, ' '.join(dirs))
         path = os.path.join(dirname, 'Makefile')
         x.info("  %s", path)
-        file = open(path, 'w')
-        file.write(text)
-        file.close()
-        # x.debug('%s', text)
+        open(path, 'w').write(text)
+
 
     print "\nNow, you can test it. Run the commands:"
     print "./configure --help"
@@ -437,14 +444,17 @@ def main():
     p.add_argument("--mc-makefiles", group = 'miniconf',
         help = "create Makefiles for a project",
         action = 'store_true', default = False)
-
+    p.add_argument("--mc-debug", group = 'miniconf',
+        help = "enable debug output in miniconf",
+        action = 'store_true', default = False)
+    
     opt_group_new('make', 'Makefile vars')
     p.add_argument("vars", group = 'make',
         help = "makefile vars, like 'CFLAGS=-02'", nargs='*')
 
     init()
     args = p.parse_args()
-    init_log(True, 0, 'app')
+    init_log(args.mc_debug, 0, 'app')
     mc = 0
     if args.mc_update:
         mc_update()
@@ -455,7 +465,7 @@ def main():
 
     if mc:
         exit(0)
-        
+  
     assign_cmd_vars()
     assign_cmd_opts()
     resolve()
