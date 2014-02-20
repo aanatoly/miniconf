@@ -13,7 +13,7 @@ could be done in a minutes
 
 ## Installation
 
-``miniconf`` is written in python and work with almost all versions from 2.4 to 3.3
+**miniconf** is written in python and work with almost all versions from 2.4 to 3.3
 To install it, download [configure](https://raw2.github.com/aanatoly/miniconf/master/configure) script, and use it to update or install
 ```bash
 cd ~/myproj
