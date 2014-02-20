@@ -26,3 +26,7 @@ Anytime, to update miniconf scripts to latest version, run
 ```bash
 ./configure --mc-update
 ```
+Now it's time to create Makefiles
+```bash
+./configure --mc-makefiles
+```
