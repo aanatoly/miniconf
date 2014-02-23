@@ -414,8 +414,6 @@ def mc_makefiles():
         level = len([ v for v in dirname.split('/') if v ])
         topdir = '/'.join(['..'] * level)
         if not topdir: topdir = '.'
-        x.debug("topdir '%s'", topdir)
-
         text = header_text % (1, 1)
         text += '''
 TOPDIR := %s
@@ -426,7 +424,7 @@ include $(TOPDIR)/.config/rules.mk
 '''
         text = text % (topdir, ' '.join(dirs))
         path = os.path.join(dirname, 'Makefile')
-        x.info("  %s", path)
+        x.info("Create %s", path)
         open(path, 'w').write(text)
 
 
@@ -482,8 +480,8 @@ def main():
 
 if __name__ == "__main__":
     try:
-        exec(open('.config/config.py', 'r').read().strip())
+        exec(open('.config/options.py', 'r').read().strip())
     except:
-        x.info("Can't read .config/config.py")
+        x.info("Can't read .config/options.py")
         pass
     main()
