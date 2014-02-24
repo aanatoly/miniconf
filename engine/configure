@@ -201,7 +201,7 @@ def my_check_output(*popenargs, **kwargs):
     output, unused_err = process.communicate()
     retcode = process.poll()
     if retcode:
-        raise CalledProcessError(retcode, cmd, output=output)
+        raise sp.CalledProcessError(retcode, cmd, output=output)
     return output
 
     
