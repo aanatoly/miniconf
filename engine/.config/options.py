@@ -50,8 +50,6 @@ def init():
     opt_new("project_version", group = 'app',
         help = "Project version", metavar='VER',
         default = lambda : detect_project_version())
-    opt_new("gui", group = 'app', help = "Build gtk2 gui",
-        action = ToggleAction, default = True)
     opt_new("sound", group = 'app',
         help = "Enable sound plugin (default: autodetect)",
         action = ToggleAction, default = None)
@@ -62,35 +60,15 @@ def init():
 # their values. Just bear in mind: whatever you do here will end up in
 # config.h.
 def resolve():
-
-    # gmodule2 is optional.
-    try:
-        opt_new_from_pkg('gmodule2', 'gmodule-2.0')
-    except:
-        pass
-
-    # gtk2 is required, only if "gui" is enabled.
-    if opt('gui'):
-        try:
-            opt_new_from_pkg('gtk2', 'gtk+-2.0')
-        except sp.CalledProcessError, e:
-            print "Command '%s' failed (exit %d)\n%s" % (' '.join(e.cmd),
-                e.returncode, e.output)
-            raise e
-
     # If user did not set sound on command line, it is autodetected.
     if opt('sound') is None and pkg_exists('alsa', '--atleast-version=1.0.10'):
         opt_set('sound', True)
 
     # alsa is required, only if "sound" is enabled.
     if opt('sound'):
-        try:
-            opt_new_from_pkg('alsa', 'alsa', pversion = '--atleast-version=1.0.10')
-        except sp.CalledProcessError, e:
-            # For required feature, print error and abord
-            print "Command '%s' failed (exit %d)\n%s" % (' '.join(e.cmd),
-                e.returncode, e.output)
-            raise e
+        # if alsa is not installed, will raise exception
+        opt_new_from_pkg('alsa', 'alsa', pversion = '--atleast-version=1.0.10')
+
 
 def detect_project_name():
     # Hardcode here the name of your project
@@ -109,11 +87,6 @@ def detect_project_version():
 # Give a summary on created configuration
 def report():
     str = "Configuration:\n"
-    str += "  GUI:           "
-    if opt('gui'):
-        str += "yes\n"
-    else:
-        str += "no\n"
     str += "  Sound plugin:  "
     if opt('sound'):
         str += "yes\n"
