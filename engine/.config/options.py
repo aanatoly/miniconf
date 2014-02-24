@@ -69,7 +69,8 @@ def resolve():
         # if alsa is not installed, will raise exception
         opt_new_from_pkg('alsa', 'alsa', pversion = '--atleast-version=1.0.10')
 
-
+    opt_new('cflags_extra', default='-I$(TOPDIR)/include')
+    
 def detect_project_name():
     # Hardcode here the name of your project
     # ret = "projectname"

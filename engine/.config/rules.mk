@@ -160,7 +160,7 @@ endif
 ifneq ($(origin DEBUG),undefined)
 override CFLAGS += -g
 endif
-override CFLAGS += -I$(TOPDIR)
+override CFLAGS += -I$(TOPDIR) $(CFLAGS_EXTRA)
 
 # Produce local obj name from C file path
 src2base = $(basename $(notdir $(1)))
