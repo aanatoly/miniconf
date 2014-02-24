@@ -264,7 +264,7 @@ endef
 
 
 targets = $(filter %_type,$(.VARIABLES))
-$(foreach t,$(targets),$(eval $(call $($(t))_rules,$(t:_type=))))
+$(foreach t,$(targets),$(eval $(call $(strip $($(t)))_rules,$(t:_type=))))
 
 
 ###############################################
