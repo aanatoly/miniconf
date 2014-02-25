@@ -46,6 +46,19 @@ if args.debug:
 
 ##################################################
 # main
+def my_check_output(*popenargs, **kwargs):  
+    if 'stdout' in kwargs:
+        raise ValueError('stdout argument not allowed, it will be overridden.')
+    cmd = kwargs.get("args")
+    if cmd is None:
+        cmd = popenargs[0]
+    x.debug("exec: %s", cmd)
+    process = sp.Popen(stdout=sp.PIPE, *popenargs, **kwargs)
+    output, unused_err = process.communicate()
+    retcode = process.poll()
+    if retcode:
+        raise sp.CalledProcessError(retcode, cmd, output=output)
+    return output
 
 def svn_is_used():
     f = open('/dev/null', 'w')
@@ -55,17 +68,24 @@ def svn_is_used():
 
 
 def svn_get_file_list():
-    p = sp.Popen('svn info -R'.split(), stdout = sp.PIPE)
-    p.wait()
-    if p.returncode:
-        return []
+    text = my_check_output('svn info -R'.split())
     files = []
-    text = p.stdout.read()
     tre = '(?m)^Path: (?P<path>.*)$(.|\s)*?^Node Kind: (?P<type>.*)$'
     for m in re.finditer(tre, text):
-        x.debug('%s %s', m.group('path'), m.group('type'))
         if m.group('type') == 'file':
             files.append(m.group('path'))
+    return files
+
+def git_is_used():
+    f = open('/dev/null', 'w')
+    p = sp.Popen('git status'.split(), stdout = f, stderr = f)
+    p.wait()
+    return p.returncode == 0
+
+
+def git_get_file_list():
+    text = my_check_output('git ls-tree --name-only -r HEAD'.split())
+    files = text.split('\n')
     return files
 
 def none_is_used():
@@ -96,6 +116,11 @@ vcs = [
         'is_used' : svn_is_used,
         'get_file_list' : svn_get_file_list
     },
+    {
+        'name' : 'git',
+        'is_used' : git_is_used,
+        'get_file_list' : git_get_file_list
+    },
     
     # must be last entry
     {
@@ -115,8 +140,11 @@ def get_file_list():
         if ret:
             x.info('VCS: %s', v['name'])
             files = v['get_file_list']()
+            # remove duplicates, if any
+            files = list(set(files))
+            files.remove('')
             files.sort()
-            x.info('File list:\n  %s', '\n  '.join(files))
+            x.debug('File list: %s', files)
             if not files:
                 x.error('No files. Aborting')
                 exit(2)
