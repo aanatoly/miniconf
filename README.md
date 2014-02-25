@@ -24,18 +24,20 @@ At any time, you can update miniconf scripts to latest version by running
 ```bash
 ./configure --mc-update
 ```
-Now it's time to create Makefiless:
+Now it's time to create Makefiles:
 ```bash
 ./configure --mc-makefiles
 ```
 
 ## Customization
 **miniconf** workflow consists of the following stages:
- * **Init**.  Add options that should be modified by user via command line
- * **Command line processing**
- * **Resolve**. Add options that do not require human interaction. Validate values of existing options for conflicts, 
-   or/and change their values. 
- * **Write configuration**. Write down all options to `config.h` and `config.mk` files
+
+ * **Initialization**.  Add options that should be modified by user via command line
+ * **Command line processing**.
+ * **Option resolution**. Validate values of existing options for conflicts, 
+   and/or change their values. Add options that do not require human
+   interaction.
+ * **Configuration output**. Write down all options to `config.h` and `config.mk` files
  * **Report**. Print configuration summary in human friendly format
   
 To customize **miniconf**, open `.config/options.py` and edit `init()`, `resolve()` or `report()` functions
