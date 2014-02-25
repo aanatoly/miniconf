@@ -38,7 +38,7 @@ SPACE := $(EMPTY) $(EMPTY)
 #  recurion rules                             #
 ###############################################
 
-RGOALS = all clean install svnignore
+RGOALS = all clean install svnignore gitignore
 .PHONY : $(RGOALS) $(SUBDIRS)
 $(RGOALS) : $(SUBDIRS)
 
@@ -323,4 +323,12 @@ svnignore:
 	cat $$prop; \
 	svn propset svn:ignore --file $$prop .; \
 	rm -f $$prop
+
+help_target ::
+	@echo "gitignore - tell git to ignore files in a cleanlist"
+
+gitignore:
+	$Qfor i in $(DISTCLEANLIST) $(CLEANLIST); do echo "$$i"; \
+		done > .gitignore
+	$Qgit add .gitignore
 
