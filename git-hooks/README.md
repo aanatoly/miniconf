@@ -17,7 +17,7 @@ Copy relevant hooks and name them TYPE-NO-NAME. For example, to have 2
 ```
 cp /tmp/miniconf/git-hooks/pre-commit-[0-9]*  .
 ```
-Create link, named as commit pointing to `hook-chain`
+Create link, named as original hook pointing to `hook-chain`
 ```
 rm -f pre-commit
 ln -sf hook-chain pre-commit
