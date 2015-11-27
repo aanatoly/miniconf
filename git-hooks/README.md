@@ -20,7 +20,7 @@ cp /tmp/miniconf/git-hooks/pre-commit-[0-9]*  .
 
 3. create link, named as commit pointing to `hook-chain`
 ```
-rm pre-commit
+rm -f pre-commit
 ln -sf hook-chain pre-commit
 ```
 That is it.
